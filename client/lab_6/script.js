@@ -11,23 +11,7 @@
     https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/random
 */
 
-function injectHTML(list) {
-  console.log('fired injectHTML');
-  /*
-  ## JS and HTML Injection
-    There are a bunch of methods to inject text or HTML into a document using JS
-    Mainly, they're considered "unsafe" because they can spoof a page pretty easily
-    But they're useful for starting to understand how websites work
-    the usual ones are element.innerText and element.innerHTML
-    Here's an article on the differences if you want to know more:
-    https://developer.mozilla.org/en-US/docs/Web/API/Node/textContent#differences_from_innertext
 
-  ## What to do in this function
-    - Accept a list of restaurant objects
-    - using a .forEach method, inject a list element into your index.html for every element in the list
-    - Display the name of that restaurant and what category of food it is
-*/
-}
 
 function processRestaurants(list) {
   console.log('fired restaurants list');
@@ -52,6 +36,52 @@ function processRestaurants(list) {
   */
 }
 
+function getRandomIntInclusive(min, max) {
+  min = Math.ceil(min);
+  max = Math.floor(max);
+  return Math.floor(Math.random() * (max - min + 1) + min); // The maximum is inclusive and the minimum is inclusive
+}
+
+
+function injectHTML(list) {
+  console.log('fired injectHTML');
+  const target = document.querySelector('#restaurant_list');
+  target.innerHTML = '';
+  list.forEach((item) => {
+    const str = `<li>${item.name}</li>`;
+    target.innerHTML += str;
+  });
+  /*
+  ## JS and HTML Injection
+    There are a bunch of methods to inject text or HTML into a document using JS
+    Mainly, they're considered "unsafe" because they can spoof a page pretty easily
+    But they're useful for starting to understand how websites work
+    the usual ones are element.innerText and element.innerHTML
+    Here's an article on the differences if you want to know more:
+    https://developer.mozilla.org/en-US/docs/Web/API/Node/textContent#differences_from_innertext
+
+  ## What to do in this function
+    - Accept a list of restaurant objects
+    - using a .forEach method, inject a list element into your index.html for every element in the list
+    - Display the name of that restaurant and what category of food it is
+*/
+}
+
+function filterList(list, query) {
+  return list.filter{(item) =>{
+    const lowerCaseName = item.name.toLowerCase();
+    const lowerCaseQuery = query.toLowerCase();
+    return lowerCaseName.includes(lowerCaseQuery);
+  }};
+}
+
+function cutRestaurantList() {
+  console.log('fired cut lsit');
+  
+}
+
+
+
 async function mainEvent() {
   /*
     ## Main Event
@@ -63,6 +93,9 @@ async function mainEvent() {
   // the async keyword means we can make API requests
   const form = document.querySelector('.main_form'); // get your main form so you can do JS with it
   const submit = document.querySelector('button[type="submit"]'); // get a reference to your submit button
+  const filterDataButton = document.querySelector('.filter');
+  const loadDataButton = document.querySelector('#data_load');
+  const generateListButton = document.querySelector('#generate');
   submit.style.display = 'none'; // let your submit button disappear
 
   /*
@@ -111,6 +144,61 @@ async function mainEvent() {
   }
 }
 
+loadDataButton.addEventListener('click', async (submitEvent) => { // async has to be declared on every function that needs to "await" something
+  submitEvent.preventDefault(); // This prevents your page from going to http://localhost:3000/api even if your form still has an action set on it
+  console.log('form submission'); // this is substituting for a "breakpoint"
+
+ 
+
+ 
+  // this is the preferred way to handle form data in JS in 2022
+  const formData = new FormData(submitEvent.target); // get the data from the listener target
+  const formProps = Object.fromEntries(formData); // Turn it into an object
+
+  
+
+  const results = await fetch('https://data.princegeorgescountymd.gov/resource/umjn-t2iz.json');
+
+
+  currentList = await results.json();
+  /*
+ ## Get request with query parameters
+
+    const results = await fetch(`/api/foodServicePG?${new URLSearchParams(formProps)}`);
+
+    The above request uses "string interpolation" to include an encoded version of your form values
+    It works because it has a ? in the string
+    Replace line 37 with it, and try it with a / instead to see what your server console says
+
+    You can check what you sent to your server in your GET request
+    By opening the "network" tab in your browser developer tools and looking at the "name" column
+    This will also show you how long it takes a request to resolve
+  */
+
+  // This changes the response from the GET into data we can use - an "object"
+  console.table(currentList); // this is called "dot notation"
+  
+  injectHTML(currentList);
+});
+
+filterButton.addEventListener('click', (event) => {
+  console.log("clicked filterButton");
+
+  const formData = new FormData(mainForm);
+  const formProps = Object.fromEntries(formData);
+
+  console.log(formProps);
+  const newList = filterList(currentList, formProps.resto);
+
+  console.log(newList); // this is called "dot notation"
+  
+  injectHTML(newList);
+
+});
+
+generateListButton.addEventListener('click', (event) => {
+
+})
 /*
   This last line actually runs first!
   It's calling the 'mainEvent' function at line 57
