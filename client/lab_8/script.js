@@ -1,10 +1,4 @@
 
-
-
-function processRestaurants(list) {
-    console.log('fired restaurants list');
-    
-  }
   
   function getRandomIntInclusive(min, max) {
     min = Math.ceil(min);
@@ -42,57 +36,86 @@ function processRestaurants(list) {
     
   }
   
+  function initMap() {
+    const carto = L.map('map').setView([38.98, -76.93], 13);
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19,
+    attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+}).addTo(map);
+    return carto;
+  }
   
-  
+
+  function markerPlace(array, map) {
+    console.log("array for markers", array);
+
+    map.eachLayer((layer) => {
+        if (layer instanceof L.Marker) {
+          layer.remove();
+        }
+      });
+
+    array.forEach((item) => {
+        console.log("markerPlace", item);
+        const {coordinates} = item.geocoded_column_1;
+
+        L.marker(coordinates[1], coordinates[0]).addTo(map);
+    })
+  }
+
   async function mainEvent() {
     
     const mainForm = document.querySelector('.main_mainForm'); // get your main mainForm so you can do JS with it
     const submit = document.querySelector('button[type="submit"]'); // get a reference to your submit button
     //const filterDataButton = document.querySelector('.filter');
     const loadDataButton = document.querySelector('#data_load');
+    const clearDataButton = document.querySelector('#data_clear');
     const generateListButton = document.querySelector('#generate');
     const textField = document.querySelector('#resto');
    
    
     const loadAnimation = document.querySelector('#data_load_animation');
-    loadAnimation.style.display = 'none';
+    
     generateListButton.classList.add('hidden');
 
-    const storedData = localStorage.getItem('storedData');
-    const parsedData = JSON.parse(storedData);
+   const carto = initMap();
 
-    if(parsedData.length > 0) {
+    const storedData = localStorage.getItem('storedData');
+    let parsedData = JSON.parse(storedData);
+
+    if(storedList?.length > 0) {
       generateListButton.classList.remove("hidden");
     }
   
  
     let currentList = [];
+
     
-    const results = await fetch('https://data.princegeorgescountymd.gov/resource/umjn-t2iz.json');
-    const arrayFromJson = await results.json(); // here is where we get the data from our request as JSON
+    // const results = await fetch('https://data.princegeorgescountymd.gov/resource/umjn-t2iz.json');
+    // const arrayFromJson = await results.json(); // here is where we get the data from our request as JSON
   
     
-    console.table(arrayFromJson.data);
+    // console.table(arrayFromJson.data);
   
-    console.log(`${arrayFromJson.data[0].name} ${arrayFromJson.data[0].category}`);
+    // console.log(`${arrayFromJson.data[0].name} ${arrayFromJson.data[0].category}`);
   
-    // This IF statement ensures we can't do anything if we don't have inmainFormation yet
-    if (arrayFromJson.data?.length > 0) { // the question mark in this means "if this is set at all"
-      submit.style.display = 'block'; // let's turn the submit button back on by setting it to display as a block when we have data available
+    // // This IF statement ensures we can't do anything if we don't have inmainFormation yet
+    // if (arrayFromJson.data?.length > 0) { // the question mark in this means "if this is set at all"
+    //   submit.style.display = 'block'; // let's turn the submit button back on by setting it to display as a block when we have data available
   
       
-      mainForm.addEventListener('submit', (submitEvent) => {
-        // This is needed to stop our page from changing to a new URL even though it heard a GET request
-        submitEvent.preventDefault();
+    //   mainForm.addEventListener('submit', (submitEvent) => {
+    //     // This is needed to stop our page from changing to a new URL even though it heard a GET request
+    //     submitEvent.preventDefault();
   
-        // This constant will have the value of your 15-restaurant collection when it processes
-        const restaurantList = processRestaurants(arrayFromJson.data);
+    //     // This constant will have the value of your 15-restaurant collection when it processes
+    //     const restaurantList = processRestaurants(arrayFromJson.data);
   
-        // And this function call will permainForm the "side effect" of injecting the HTML list for you
-        injectHTML(restaurantList);
+    //     // And this function call will permainForm the "side effect" of injecting the HTML list for you
+    //     injectHTML(restaurantList);
   
-      });
-    }
+    //   });
+    // }
 
     loadDataButton.addEventListener('click', async (submitEvent) => { // async has to be declared on every function that needs to "await" something
     
@@ -106,8 +129,12 @@ function processRestaurants(list) {
     
       const storedList = await results.json();
       localStorage.setItem('storedData', JSON.stringify(storedList));
-
+      parsedData = storedList;
     
+      if (parsedData?.length > 0) {
+        generateListButton.classList.remove("hidden");
+      }
+
       loadAnimation.style.display = 'none';
       //console.table(storedList);
     
@@ -119,6 +146,7 @@ function processRestaurants(list) {
       currentList = cutRestaurantList(recallList);
       console.log(currentList);
       injectHTML(currentList);
+      markerPlace(currentList, carto);
     })
 
     textField.addEventListener('input', (event) => {
@@ -126,8 +154,15 @@ function processRestaurants(list) {
       const newList = filterList(currentList, event.target.value);
       console.log(newList);
       injectHTML(newList);
-
+      markerPlace(newList, carto);
     })
+
+
+    clearDataButton.addEventListener("click", (event) => {
+        console.log('clear browser data');
+        localStorage.clear();
+        console.log('localStorage check', localStorage.getItem("storedData"));
+  })
 
   }
   
