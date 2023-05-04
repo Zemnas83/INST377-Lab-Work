@@ -26,7 +26,7 @@
     });
   }
   
-  function cutRestaurantList() {
+  function cutRestaurantList(list) {
     console.log('fired cut lsit');
     const range = [...Array(15).keys()];
     const newArray = range.map((item) =>{
