@@ -29,7 +29,7 @@
   function cutRestaurantList() {
     console.log('fired cut lsit');
     const range = [...Array(15).keys()];
-    const newArray = range.map(() =>{
+    const newArray = range.map((item) =>{
       const idx = getRandomIntInclusive(0, list.length - 1);
       return list[idx]
     })
@@ -41,7 +41,7 @@
     L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 19,
     attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-}).addTo(map);
+}).addTo(carto);
     return carto;
   }
   
@@ -59,7 +59,7 @@
         console.log("markerPlace", item);
         const {coordinates} = item.geocoded_column_1;
 
-        L.marker(coordinates[1], coordinates[0]).addTo(map);
+        L.marker([coordinates[1], coordinates[0]]).addTo(map);
     })
   }
 
@@ -119,8 +119,10 @@
 
     loadDataButton.addEventListener('click', async (submitEvent) => { // async has to be declared on every function that needs to "await" something
     
+      
+      submitEvent.preventDefault();
       console.log('loading data'); // this is substituting for a "breakpoint"
-    
+
      
       loadAnimation.style.display = 'inline-block';
     
@@ -143,7 +145,7 @@
     
     generateListButton.addEventListener('click', (event) => {
       console.log('generate new list');
-      currentList = cutRestaurantList(recallList);
+      currentList = cutRestaurantList(parsedData);
       console.log(currentList);
       injectHTML(currentList);
       markerPlace(currentList, carto);

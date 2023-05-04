@@ -48,7 +48,7 @@ function processRestaurants(list) {
     
     const mainForm = document.querySelector('.main_mainForm'); // get your main mainForm so you can do JS with it
     const submit = document.querySelector('button[type="submit"]'); // get a reference to your submit button
-    const filterDataButton = document.querySelector('.filter');
+    //const filterDataButton = document.querySelector('.filter');
     const loadDataButton = document.querySelector('#data_load');
     const generateListButton = document.querySelector('#generate');
     const textField = document.querySelector('#resto');
@@ -56,10 +56,16 @@ function processRestaurants(list) {
    
     const loadAnimation = document.querySelector('#data_load_animation');
     loadAnimation.style.display = 'none';
-    generateListButton.style.display = 'none';
+    generateListButton.classList.add('hidden');
+
+    const storedData = localStorage.getItem('storedData');
+    const parsedData = JSON.parse(storedData);
+
+    if(parsedData.length > 0) {
+      generateListButton.classList.remove("hidden");
+    }
   
-  
-    let storedList = [];
+ 
     let currentList = [];
     
     const results = await fetch('https://data.princegeorgescountymd.gov/resource/umjn-t2iz.json');
@@ -98,35 +104,19 @@ function processRestaurants(list) {
       const results = await fetch('https://data.princegeorgescountymd.gov/resource/umjn-t2iz.json');
     
     
-      storedList = await results.json();
+      const storedList = await results.json();
+      localStorage.setItem('storedData', JSON.stringify(storedList));
 
-      if (storedList.length > 0) {
-        generateListButton.classList.remove('hidden');
-      }
     
       loadAnimation.style.display = 'none';
-      console.table(storedList);
+      //console.table(storedList);
     
     });
     
-    filterDataButton.addEventListener('click', (event) => {
-      console.log("clicked filterButton");
-    
-      const mainFormData = new mainFormData(mainmainForm);
-      const mainFormProps = Object.fromEntries(mainFormData);
-    
-      console.log(mainFormProps);
-      const newList = filterList(currentList, mainFormProps.resto);
-    
-      console.log(newList); // this is called "dot notation"
-      
-      injectHTML(newList);
-    
-    })
     
     generateListButton.addEventListener('click', (event) => {
       console.log('generate new list');
-      currentList = cutRestaurantList(storedList);
+      currentList = cutRestaurantList(recallList);
       console.log(currentList);
       injectHTML(currentList);
     })
