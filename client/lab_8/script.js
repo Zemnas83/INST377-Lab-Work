@@ -85,13 +85,13 @@ async function mainEvent() {
 
   loadDataButton.addEventListener('click', async (submitEvent) => { // async has to be declared on every function that needs to "await" something
     submitEvent.preventDefault(); // This prevents your page from going to http://localhost:3000/api even if your form still has an action set on it
-    console.log('form submission'); // this is substituting for a "breakpoint"
+    console.log('form submission'); 
     loadAnimation.style.display = 'inline-block';
 
 
     const results = await fetch('https://data.princegeorgescountymd.gov/resource/umjn-t2iz.json');
 
-    // This changes the response from the GET into data we can use - an "object"
+  
     const storedList = await results.json();
     localStorage.setItem('storedData', JSON.stringify(storedList));
     parsedData =  storedList;
